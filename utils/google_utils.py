@@ -18,17 +18,44 @@ def gsutil_getsize(url=''):
 
 def attempt_download(file, repo='WongKinYiu/yolov7'):
     # Attempt file download if does not exist
-    file = Path(str(file).strip().replace("'", '').lower())
+    """
+    [Solution]
+        Reference: [modify google_utils for latest release tag missingissue with loading weights attempt_download in google_utils.py](https://github.com/WongKinYiu/yolov7/issues/1418)
+    """
+    file = Path(str(file).strip().replace("'", ''))
 
     if not file.exists():
+        """
+        [Fix Bug]
+                Traceback (most recent call last):
+                File "/app/app/models/YOLOv7/utils/google_utils.py", line 26, in attempt_download
+                    assets = [x['name'] for x in response['assets']]  # release assets
+                KeyError: 'assets'
+        """
+        file = Path(str(file).strip().replace("'", '').lower())
         try:
-            response = requests.get(f'https://api.github.com/repos/{repo}/releases/latest').json()  # github api
+            """
+            [Solution]
+                Reference: [modify google_utils for latest release tag missing](https://github.com/WongKinYiu/yolov7/pull/1262)
+            """
+            response = requests.get(f'https://api.github.com/repos/WongKinYiu/yolov7/releases/latest').json()
+            if response['message'] == 'Not Found':
+                response = requests.get(f'https://api.github.com/repos/WongKinYiu/yolov7/releases').json()
+                response = requests.get(response[0]["url"]).json()
+            
             assets = [x['name'] for x in response['assets']]  # release assets
             tag = response['tag_name']  # i.e. 'v1.0'
         except:  # fallback plan
+            """
+            [Solution]
+                Reference: [Error in the function "utils.google_utils.attempt_download"](https://github.com/WongKinYiu/yolov7/issues/487)
+            """
             assets = ['yolov7.pt', 'yolov7-tiny.pt', 'yolov7x.pt', 'yolov7-d6.pt', 'yolov7-e6.pt', 
-                      'yolov7-e6e.pt', 'yolov7-w6.pt']
-            tag = subprocess.check_output('git tag', shell=True).decode().split()[-1]
+                      'yolov7-e6e.pt', 'yolov7-w6.pt', 'yolov7x_training.pt',
+                      'yolov7-e6_training.pt', 'yolov7-e6e_training.pt', 'yolov7-d6_training.pt',
+                      'yolov7-w6_training.pt', 'yolov7_training.pt'] 
+            tag = 'v0.1'
+            # tag = subprocess.check_output('git tag', shell=True).decode().split()[-1]
 
         name = file.name
         if name in assets:
