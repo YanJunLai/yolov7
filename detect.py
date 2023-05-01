@@ -117,8 +117,8 @@ def detect(opt: YOLOv7Config) -> str:
                     xywh = (xyxy2xywh(torch.tensor(xyxy).view(1, 4))).view(-1).tolist()  # normalized xywh
                     bounding_box ={
                         'bbox': {
-                            'x_min': xywh[0],
-                            'y_min': xywh[1],
+                            'x_min': xywh[0] - 0.5 * xywh[2],
+                            'y_min': xywh[1] - 0.5 * xywh[3],
                             'width': xywh[2],
                             'height': xywh[3]
                         },
