@@ -18,7 +18,7 @@ from utils.plots import plot_one_box
 from utils.torch_utils import select_device, load_classifier, time_synchronized, TracedModel
 
 
-def detect(opt: YOLOv7Config) -> str:
+def detect(opt: YOLOv7Config, model=None) -> str:
     source, weights, imgsz, trace = opt.source, opt.weights, opt.img_size, not opt.no_trace
     webcam = source.isnumeric() or source.endswith('.txt') or source.lower().startswith(
         ('rtsp://', 'rtmp://', 'http://', 'https://'))
@@ -28,7 +28,8 @@ def detect(opt: YOLOv7Config) -> str:
     half = device.type != 'cpu'  # half precision only supported on CUDA
 
     # Load model
-    model = attempt_load(weights, map_location=device)  # load FP32 model
+    if model == None:
+        model = attempt_load(weights, map_location=device)  # load FP32 model
     stride = int(model.stride.max())  # model stride
     imgsz = check_img_size(imgsz, s=stride)  # check img_size
 
